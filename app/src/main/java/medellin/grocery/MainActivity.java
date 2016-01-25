@@ -8,9 +8,16 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.EditText;
 
 import com.parse.Parse;
 import com.parse.ParseObject;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import medellin.grocery.DB.DBHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,14 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private final String PARSE_CLIENT_KEY= "YIpvhkqCexkjErwlh8jyvJ7YtH1yLW8VDPdMRQ3D";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, PARSE_APPLICATION_ID, PARSE_CLIENT_KEY);
-
-        ParseObject testObject = new ParseObject("TestObject");
-        testObject.put("foo", "bar");
-        testObject.saveInBackground();
 
         //check if the user has logged in before
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -43,5 +46,6 @@ public class MainActivity extends AppCompatActivity {
             //startActivityForResult(i, 1);
         }
         setContentView(R.layout.activity_main);
+
     }
 }
