@@ -12,10 +12,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.parse.Parse;
-import com.parse.ParseObject;
+
 
 // used to make the HTTP Reequest through java
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,9 +30,12 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
+
+
+
 //Create a singleton class so that we don't have a lot  of DBHelper classes running around
 // only want one DBHelper out connecting to the Parse Database and and making API calls. Threads my niggas
-public class DBHelper extends AsyncTask<String, Void, JSONObject> {
+public class DBHelper extends AsyncTask<String, Void, JSONArray> {
 //example of string that we use to ping edmame below
 //"https://api.edamam.com/search?q=beef&app_id=${YOUR_APP_ID}&app_key=${YOUR_APP_KEY}"
 
@@ -44,14 +47,24 @@ public class DBHelper extends AsyncTask<String, Void, JSONObject> {
     private StringBuilder result= new StringBuilder();
     private static DBHelper instance = null;
     private JSONObject formattedResult;
+    private JSONArray  hitsResults;
+    // use this to return result
+    public AsyncResponse delegate = null;
     private DBHelper() {
         // Exists only to defeat instantiation.
     }
 
+    //Used to return information from the ASYNC class
+    public interface AsyncResponse {
+        void processFinish(JSONArray output);
+    }
+
+
     //Remeber that this must be turned into JSON in order to easily use the information
     @Override
-    protected JSONObject doInBackground(String... query) {
-        String finalQuery= url+query[0]+"&app_id"+APP_ID+"&app_key"+APP_KEY;
+    protected JSONArray doInBackground(String... query) {
+
+        String finalQuery= url+query[0]+"&app_id="+APP_ID+"&app_key="+APP_KEY+"&to="+query[1];
         HttpURLConnection urlConnection=null;
         try {
             URL obj = new URL(finalQuery);
@@ -63,9 +76,9 @@ public class DBHelper extends AsyncTask<String, Void, JSONObject> {
             while ((line = reader.readLine()) != null) {
                 result.append(line);
             }
-            
+
         }catch (Exception e){
-            System.err.println(e);
+            Log.e("Error with request ",e.toString());
 
 
         }
@@ -75,11 +88,12 @@ public class DBHelper extends AsyncTask<String, Void, JSONObject> {
 
         try {
             formattedResult = new JSONObject(result.toString());
+            hitsResults= formattedResult.getJSONArray("hits");
         }catch(JSONException e){
             Log.e("Exception from JSON", e.toString());
         }
-        Log.i("JSON OBJECT",formattedResult.toString());
-        return formattedResult;
+
+        return hitsResults;
 
         /* from this point I need to correctly parse the json
             then place appropriately place it in the parse tables
@@ -96,9 +110,13 @@ public class DBHelper extends AsyncTask<String, Void, JSONObject> {
     }
 
 
-    protected void onPostExecute(JSONObject result) {
+    protected void onPostExecute(JSONArray result) {
         super.onPostExecute(result);
-        //Do anything with response..
+        delegate.processFinish(result);
+    }
+
+    public JSONArray getSearchRsult() throws JSONException {
+        return formattedResult.getJSONArray("hits");
     }
 
 }

@@ -8,18 +8,20 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 
 import com.parse.Parse;
 import com.parse.ParseObject;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
 import medellin.grocery.DB.DBHelper;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DBHelper.AsyncResponse {
 
     private final String PARSE_APPLICATION_ID= "oWReLz33rUQNlHJz4pheHgnOdQM3NIqeYJ3ZNd6H";
     private final String PARSE_CLIENT_KEY= "YIpvhkqCexkjErwlh8jyvJ7YtH1yLW8VDPdMRQ3D";
@@ -47,5 +49,23 @@ public class MainActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_main);
 
+        try {
+            DBHelper dbHelper = DBHelper.getInstance();
+            dbHelper.execute("chicken", "1000");
+            dbHelper.delegate=this;
+
+        }catch(IOException e){
+            Log.e("Error With json",e.toString());
+        }
+
+    }
+    //this override the implemented method from asyncTask
+   public void processFinish(JSONArray output){
+        //Here you will receive the result fired from async class
+        //of onPostExecute(result) method.
+       // This is where you can parse JSON Blase BLase make list
+       // make list views and so on and so forth
+
+       Log.i("Hits", output.toString());
     }
 }
